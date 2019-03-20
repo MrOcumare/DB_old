@@ -73,8 +73,13 @@ public class ThreadController {
     }
     @RequestMapping(path = "/{slug_or_id}/details", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity<?> postDetails(@PathVariable("slug_or_id") String slug_or_id, @RequestBody Thread body) {
+        Thread buf = null;
+        try {
+            buf = treadDAO.getThreadbySlugOrID(slug_or_id);
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("No such thread"));
+        }
 
-        Thread buf = treadDAO.getThreadbySlugOrID(slug_or_id);
         if (buf == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("No such thread"));
         }

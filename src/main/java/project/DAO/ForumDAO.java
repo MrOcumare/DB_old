@@ -55,11 +55,29 @@ public class ForumDAO {
 //        }
     }
 
+    public Integer getForumIdBySlug(String slug) {
+//        try {
+        return template.queryForObject(
+                "SELECT id FROM forum WHERE slug = ?::citext",
+                Integer.class, slug);
+//        } catch (DataAccessException e) {
+//            return null;
+//        }
+    }
     public Forum getForum(String slug) {
         try {
             return template.queryForObject(
                     "SELECT * from forum as f where f.slug = ?::citext;",
                     FORUM_MAPPER, slug);
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
+    public Forum getForumBySlug(String key) {
+        try {
+            return template.queryForObject(
+                    "SELECT * FROM forum WHERE slug = ?;",
+                    FORUM_MAPPER, key);
         } catch (DataAccessException e) {
             return null;
         }
@@ -76,6 +94,19 @@ public class ForumDAO {
 //                Integer.class, slug);
 //    }
 
+
+
+
+    public static final RowMapper<User> USER_MAPPER = (res, num) -> {
+        String nickname = res.getString("nickname");
+        String email = res.getString("email");
+        String fullname = res.getString("fullname");
+        String about = res.getString("about");
+        if (res.wasNull()) {
+            about = null;
+        }
+        return new User(fullname, nickname, email, about);
+    };
     public static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
         String slug = res.getString("slug");
         String title = res.getString("title");

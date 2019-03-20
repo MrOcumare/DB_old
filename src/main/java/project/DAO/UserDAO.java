@@ -76,6 +76,7 @@ public class UserDAO {
 
     }
 
+
     public List<User> getConflictUsers(String nickname, String email) {
 //        try {
         List<Object> obj = new ArrayList<>();

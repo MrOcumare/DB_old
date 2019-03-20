@@ -106,6 +106,15 @@ public class ThreadDAO {
                     THREAD_MAPPER, key);
         }
     }
+    public Thread getThreadById(long id) {
+        try {
+            return template.queryForObject(
+                    "SELECT * FROM thread WHERE tid = ?",
+                    THREAD_MAPPER, id);
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
 
     public void vote(String key, Vote vt) {
 //        try{

@@ -80,6 +80,27 @@ public class PostDAO {
             return null;
         }
     }
+    public Post getPostByIdPerf(long id) {
+        return template.queryForObject(
+                "SELECT * FROM post WHERE pid = ?",
+                POST_MAPPER, id);
+
+    }
+
+    public void changePost(Post body) {
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(con -> {
+            PreparedStatement pst = con.prepareStatement(
+                    "update post set" +
+                            "  message = COALESCE(?, message), " +
+                            "  isedited = COALESCE(true, isedited) " +
+                            "where pid = ?",
+                    PreparedStatement.RETURN_GENERATED_KEYS);
+            pst.setString(1, body.getMessage());
+            pst.setLong(2, body.getId());
+            return pst;
+        }, keyHolder);
+    }
 
 
 
