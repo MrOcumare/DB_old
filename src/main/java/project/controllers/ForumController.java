@@ -25,7 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.models.Forum;
 
-
+import java.util.List;
 
 
 @ResponseBody
@@ -78,12 +78,12 @@ public class ForumController {
             body.setId(result[1]);
             body.setForum(forumDAO.getForum(forum).getSlug());
             return ResponseEntity.status(HttpStatus.CREATED).body(body);
-        } else {
+        } else if (result[0] == 404){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find such User or thread"));
         }
-//        else {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body(treadDAO.getThreadBySlug(body.getSlug()));
-//        }
+        else {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(treadDAO.getThreadbySlugOrID(body.getSlug()));
+        }
     }
 
     @RequestMapping(path = "/{forum}/threads", method = RequestMethod.GET, produces = "application/json")
@@ -91,12 +91,20 @@ public class ForumController {
                                         @RequestParam(value = "limit", required = false) Integer limit,
                                         @RequestParam(value = "since", required = false) String since,
                                         @RequestParam(value = "desc", required = false) boolean desc) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(treadDAO.getThreads(forumDAO.getForumBySlug(forum), limit, since, desc));
 
-        } catch (DataAccessException e) {
+        List<Thread> result  = treadDAO.getThreads(forum, limit, since, desc);
+        if (result != null & forumDAO.getForum(forum) != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
         }
+//        try {
+//
+//            return ResponseEntity.status(HttpStatus.OK).body(treadDAO.getThreads(forum, limit, since, desc));
+//
+//        } catch (DataAccessException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+//        }
     }
 
 }

@@ -14,10 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.*;
 
 import project.models.Thread;
+import project.models.User;
+import project.models.Vote;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.jdbc.core.RowMapper;
+
+import javax.sound.midi.SysexMessage;
 
 
 @Service
@@ -61,11 +65,12 @@ public class ThreadDAO {
         }
     }
 
-    public List<Thread> getThreads(Integer forumid, Integer limit, String since, Boolean desc) {
+    public List<Thread> getThreads(String forum, Integer limit, String since, Boolean desc) {
         try {
+            //System.out.println(forumid + " " + limit + " " + since + " " + desc );
             List<Object> myObj = new ArrayList<>();
-            final StringBuilder myStr = new StringBuilder("select * from thread where forumid = ? ");
-            myObj.add(forumid);
+            final StringBuilder myStr = new StringBuilder("select * from thread where forum = ?::citext ");
+            myObj.add(forum);
             if (since != null) {
                 if (desc) {
                     myStr.append(" and created <= ?::timestamptz ");
@@ -82,6 +87,7 @@ public class ThreadDAO {
                 myStr.append(" limit ? ");
                 myObj.add(limit);
             }
+            //System.out.println(myStr.toString());
             return template.query(myStr.toString()
                     , myObj.toArray(), THREAD_MAPPER);
         } catch (DataAccessException e) {
@@ -89,6 +95,111 @@ public class ThreadDAO {
         }
     }
 
+    public Thread getThreadbySlugOrID(String key) {
+        try {
+            return template.queryForObject(
+                    "SELECT * FROM thread WHERE tid = ?",
+                    THREAD_MAPPER, Integer.parseInt(key));
+        } catch (NumberFormatException e) {
+            return template.queryForObject(
+                    "SELECT * FROM thread WHERE slug = ?::citext",
+                    THREAD_MAPPER, key);
+        }
+    }
+
+    public void vote(String key, Vote vt) {
+//        try{
+//            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+//            template.update(con -> {
+//                PreparedStatement statement = con.prepareStatement(
+//                        "insert into vote(owner, voice) values(?::citext,?) " +
+//                                " ON CONFLICT (owner) DO UPDATE SET " +
+//                                " voice = ?;",
+//                        PreparedStatement.RETURN_GENERATED_KEYS);
+//                statement.setString(1, vt.getNickname());
+//                statement.setLong(2, vt.getVoice());
+//                statement.setLong(3, vt.getVoice());
+//                return statement;
+//            }, keyHolder);
+//            String sql = "UPDATE thread "+
+//                    "set votes = votes + ? "+
+//                    "WHERE tid = ?";
+//            template.update(sql, vt.getVoice(), Integer.parseInt(key) );
+//            System.out.println(Integer.parseInt(key)+"    qq    weqwqeqweqweqweqweqe     "  + vt.getVoice());
+//        } catch (NumberFormatException e) {
+//            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+//            template.update(con -> {
+//                PreparedStatement statement = con.prepareStatement(
+//                        "insert into vote(owner, voice) values(?::citext,?)" +
+//                                " ON CONFLICT (owner) DO UPDATE SET " +
+//                                " voice = ?;",
+//                        PreparedStatement.RETURN_GENERATED_KEYS);
+//                statement.setString(1, vt.getNickname());
+//                statement.setLong(2, vt.getVoice());
+//                statement.setLong(3, vt.getVoice());
+//
+//                return statement;
+//            }, keyHolder);
+//            String sql = "UPDATE thread "+
+//                    "set votes = votes + ? "+
+//                    "WHERE slug = ?::citext";
+//            template.update(sql, vt.getVoice(), key );
+//        }
+        try {
+            vt.setTid(Integer.parseInt(key));
+        } catch (NumberFormatException e) {
+            vt.setTid(
+                    template.queryForObject("SELECT tid FROM thread WHERE slug = ?::citext", new Object[]{key}, Integer.class));
+        }
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        template.update(con -> {
+            PreparedStatement statement = con.prepareStatement(
+                    "insert into vote(owner, voice, tid) values(?::citext,?, ?)" +
+                            " ON CONFLICT (owner) DO UPDATE SET " +
+                            " voice = ?;",
+                    PreparedStatement.RETURN_GENERATED_KEYS);
+            statement.setString(1, vt.getNickname());
+            statement.setLong(2, vt.getVoice());
+            statement.setLong(3, vt.getTid());
+            statement.setLong(4, vt.getVoice());
+
+            return statement;
+        }, keyHolder);
+        String sql = "UPDATE thread set votes = (select sum(voice) from vote WHERE tid = ?) WHERE tid = ?";
+        template.update(sql, vt.getTid(), vt.getTid());
+    }
+
+    public Integer chagenThread(Thread body) {
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            template.update(con -> {
+                PreparedStatement pst = con.prepareStatement(
+                        "update thread set" +
+                                "  message = COALESCE(?, message)," +
+                                "  title = COALESCE(?, title)" +
+                                "where tid = ?",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                pst.setString(1, body.getMessage());
+                pst.setString(2, body.getTitle());
+                pst.setLong(3, body.getId());
+                return pst;
+            }, keyHolder);
+//            String sql = "UPDATE forum "+
+//                    "set threadCount = threadCount + 1 "+
+//                    "WHERE forum = ?::citext";
+//            template.update(sql, body.getForum());
+        } catch (Exception e) {
+            return 409;
+        }
+        return 201;
+    }
+
+
+    //    public static final RowMapper<Vote> VOTE_MAPPER = (res, num) -> {
+//        String nickname = res.getString("nickname");
+//        Long vote = res.getLong("vote");
+//        return new Vote(nickname, vote);
+//    };
     private static final RowMapper<Thread> THREAD_MAPPER = (res, num) -> {
         long votes = res.getLong("votes");
         Long id = res.getLong("tid");
@@ -101,4 +212,6 @@ public class ThreadDAO {
         String title = res.getString("title");
         return new Thread(slug, forum, title, message, owner, id, votes, created, forumid);
     };
+
+
 }

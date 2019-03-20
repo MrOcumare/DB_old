@@ -65,16 +65,16 @@ public class ForumDAO {
         }
     }
 
-    public Integer getForumBySlug(String slug) {
-//        List<Object> obj = new ArrayList<>();
-//        obj.add(slug);
-//        final StringBuilder query =
-//                new StringBuilder("SELECT * from forum as f where f.slug = ?::citext;");
-//        return (template.query(query.toString(), obj.toArray(), FORUM_MAPPER).size());
-        return template.queryForObject(
-                "SELECT id FROM forum WHERE slug = ?::citext",
-                Integer.class, slug);
-    }
+//    public Integer getForumBySlug(String slug) {
+////        List<Object> obj = new ArrayList<>();
+////        obj.add(slug);
+////        final StringBuilder query =
+////                new StringBuilder("SELECT * from forum as f where f.slug = ?::citext;");
+////        return (template.query(query.toString(), obj.toArray(), FORUM_MAPPER).size());
+//        return template.queryForObject(
+//                "SELECT id FROM forum WHERE slug = ?::citext",
+//                Integer.class, slug);
+//    }
 
     public static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
         String slug = res.getString("slug");
@@ -83,4 +83,13 @@ public class ForumDAO {
 
         return new Forum(slug, title, user);
     };
+//private static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
+//    String slug = res.getString("slug");
+//    String title = res.getString("title");
+//    Long postCount = res.getLong("postCount");
+//    Long id = res.getLong("id");
+//    Long threadCount = res.getLong("threadCount");
+//    String owner = res.getString("owner");
+//    return new Forum(id, slug, title, owner, postCount, threadCount);
+//};
 }
