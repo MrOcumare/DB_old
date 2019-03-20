@@ -51,6 +51,10 @@ public class ThreadDAO {
                 pst.setString(5, body.getAuthor());
                 pst.setLong(6, body.getVotes());
                 pst.setString(7, body.getCreated());
+                String sql = "UPDATE forum "+
+                        "set threadcount = threadcount + 1 "+
+                        "WHERE slug = ?::citext";
+                template.update(sql, body.getForum());
                 return pst;
             }, keyHolder);
             result[0] = 201;
@@ -193,10 +197,7 @@ public class ThreadDAO {
                 pst.setLong(3, body.getId());
                 return pst;
             }, keyHolder);
-//            String sql = "UPDATE forum "+
-//                    "set threadCount = threadCount + 1 "+
-//                    "WHERE forum = ?::citext";
-//            template.update(sql, body.getForum());
+            System.out.println(body.getForum() + "         ");
         } catch (Exception e) {
             return 409;
         }

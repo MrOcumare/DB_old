@@ -107,20 +107,21 @@ public class ForumDAO {
         }
         return new User(fullname, nickname, email, about);
     };
-    public static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
-        String slug = res.getString("slug");
-        String title = res.getString("title");
-        String user = res.getString("owner");
-
-        return new Forum(slug, title, user);
-    };
-//private static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
-//    String slug = res.getString("slug");
-//    String title = res.getString("title");
-//    Long postCount = res.getLong("postCount");
-//    Long id = res.getLong("id");
-//    Long threadCount = res.getLong("threadCount");
-//    String owner = res.getString("owner");
-//    return new Forum(id, slug, title, owner, postCount, threadCount);
-//};
+//    public static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
+//        String slug = res.getString("slug");
+//        String title = res.getString("title");
+//        String user = res.getString("owner");
+//
+//        return new Forum(slug, title, user);
+//    };
+    ///////_________________________
+private static final RowMapper<Forum> FORUM_MAPPER = (res, num) -> {
+    String slug = res.getString("slug");
+    String title = res.getString("title");
+    Long postCount = res.getLong("postCount");
+    Long id = res.getLong("id");
+    Long threadCount = res.getLong("threadCount");
+    String owner = res.getString("owner");
+    return new Forum(id, slug, title, owner, postCount, threadCount);
+};
 }

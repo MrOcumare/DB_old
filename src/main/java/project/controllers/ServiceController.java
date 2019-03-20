@@ -22,9 +22,9 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.OK).body(sdao.getInfo());
     }
 
-    @RequestMapping(path = "/clear", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity<?> clearDB() {
-        sdao.truncateDB();
-        return ResponseEntity.status(HttpStatus.OK).body("CLEARED!!!");
-    }
+//    @RequestMapping(path = "/clear", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+//    public ResponseEntity<?> clearDB() {
+//        sdao.truncateDB();
+//        return ResponseEntity.status(HttpStatus.OK).body("CLEARED!!!");
+//    }
 }

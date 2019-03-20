@@ -59,10 +59,10 @@ public class PostDAO {
                 }, keyHolder);
                 body.setId(keyHolder.getKey().intValue());
 
-//                String sql = "UPDATE forum "+
-//                    "set postCount = postCount + 1 "+
-//                    "WHERE forum = ?::citext";
-//                template.update(sql, body.getForum());
+                String sql = "UPDATE forum "+
+                    "set postCount = postCount + 1 "+
+                    "WHERE slug = ?::citext";
+                template.update(sql, body.getForum());
 
             }
             return 201;

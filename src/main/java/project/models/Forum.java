@@ -11,28 +11,28 @@ public class Forum {
 
 
     ///******
-//    private long id;
-//    private long posts;
-//    private long threads;
+    private long id;
+    private long posts;
+    private long threads;
     @JsonCreator
     public Forum(//
-//            @JsonProperty("id") long id,
+            @JsonProperty("id") long id,
             //*****
             @JsonProperty("slug") String slug,
             @JsonProperty("title") String title,
-            @JsonProperty("user") String user
+            @JsonProperty("user") String user,
             ///*****
-//            @JsonProperty("postCount") long postCount,
-//            @JsonProperty("threadCount") long threadCount
+            @JsonProperty("postCount") long postCount,
+            @JsonProperty("threadCount") long threadCount
     ) {
         this.slug = slug;
         this.title = title;
         this.user = user;
 
         //*****
-//        this.id = id;
-//        this.posts = postCount;
-//        this.threads = threadCount;
+        this.id = id;
+        this.posts = postCount;
+        this.threads = threadCount;
     }
 
     public String getSlug() {
@@ -59,28 +59,28 @@ public class Forum {
         this.user = master;
     }
 ////////*******
-//    public long getId() {
-//        return id;
-//    }
-//
-//    public void setId(long id) {
-//        this.id = id;
-//    }
-//
-//    public long getPosts() {
-//        return posts;
-//    }
-//
-//    public void setPosts(long posts) {
-//        this.posts = posts;
-//    }
-//
-//    public long getThreads() {
-//        return threads;
-//    }
-//
-//    public void setThreads(long threads) {
-//        this.threads = threads;
-//    }
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getPosts() {
+        return posts;
+    }
+
+    public void setPosts(long posts) {
+        this.posts = posts;
+    }
+
+    public long getThreads() {
+        return threads;
+    }
+
+    public void setThreads(long threads) {
+        this.threads = threads;
+    }
 
 }
