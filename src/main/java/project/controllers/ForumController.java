@@ -107,6 +107,23 @@ public class ForumController {
 //        }
     }
 
+    @RequestMapping(path = "/{forum}/users", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> getUsers(@PathVariable String forum,
+                                      @RequestParam(value = "limit", required = false) Integer limit,
+                                      @RequestParam(value = "since", required = false) String since,
+                                      @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc) {
+        if (forumDAO.getForum(forum) != null ) {
+            return ResponseEntity.status(HttpStatus.OK).body(forumDAO.getUsers(forum, limit, since, desc));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+        }
+//        try {
+//            return ResponseEntity.status(HttpStatus.OK).body(forumDAO.getUsers(forum, limit, since, desc));
+//        } catch (DataAccessException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+//        }
+    }
+
 
 
 }

@@ -83,6 +83,36 @@ public class ForumDAO {
         }
     }
 
+
+    public List<User> getUsers(String forum, Integer limit, String since, Boolean desc) {
+        try {
+            List<Object> myObj = new ArrayList<>();
+            StringBuilder myStr = new StringBuilder("select * from users where nickname in ((select owner from post where forum = ?::citext) union (select owner from thread where forum = ?::citext))");
+            myObj.add(forum);
+            myObj.add(forum);
+            if (since != null) {
+                if (desc) {
+                    myStr.append(" AND nickname < ?::citext ");
+                } else {
+                    myStr.append(" AND nickname > ?::citext ");
+                }
+                myObj.add(since);
+            }
+            myStr.append(" order by nickname ");
+            if (desc) {
+                myStr.append(" desc ");
+            }
+            if (limit != null) {
+                myStr.append(" limit ? ");
+                myObj.add(limit);
+            }
+            return template.query(myStr.toString()
+                    , myObj.toArray(), USER_MAPPER);
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
+
 //    public Integer getForumBySlug(String slug) {
 ////        List<Object> obj = new ArrayList<>();
 ////        obj.add(slug);

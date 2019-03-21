@@ -12,7 +12,7 @@ import java.util.List;
 //import project.models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.*;
-
+import project.models.Post;
 import project.models.Thread;
 import project.models.User;
 import project.models.Vote;
@@ -96,6 +96,17 @@ public class ThreadDAO {
                     , myObj.toArray(), THREAD_MAPPER);
         } catch (DataAccessException e) {
             return null;
+        }
+    }
+    public Integer getThreadIDbySlugOrID(String key) {
+        try {
+            return template.queryForObject(
+                    "SELECT tid FROM thread WHERE tid = ?",
+                    Integer.class, Integer.parseInt(key));
+        } catch (NumberFormatException e) {
+            return template.queryForObject(
+                    "SELECT tid FROM thread WHERE slug = ?::citext",
+                    Integer.class, key);
         }
     }
 
@@ -197,11 +208,43 @@ public class ThreadDAO {
                 pst.setLong(3, body.getId());
                 return pst;
             }, keyHolder);
-            System.out.println(body.getForum() + "         ");
+
         } catch (Exception e) {
             return 409;
         }
         return 201;
+    }
+
+
+    public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
+        List<Object> myObj = new ArrayList<>();
+        if (sort.equals("flat")) {
+            StringBuilder myStr = new StringBuilder("select * from post where threadid = ?");
+            myObj.add(threadId);
+            if (since != null) {
+                if (desc) {
+                    myStr.append(" and pid < ?");
+                } else {
+                    myStr.append(" and pid > ?");
+                }
+                myObj.add(since);
+            }
+            myStr.append(" order by created ");
+            if (desc) {
+                myStr.append(" desc, pid desc ");
+            } else {
+                myStr.append(",pid");
+            }
+            if (limit != null) {
+                myStr.append(" limit ? ");
+                myObj.add(limit);
+            }
+            return template.query(myStr.toString()
+                    , myObj.toArray(), POST_MAPPER);
+        }
+        else {
+            return null;
+        }
     }
 
 
@@ -221,6 +264,19 @@ public class ThreadDAO {
         String message = res.getString("message");
         String title = res.getString("title");
         return new Thread(slug, forum, title, message, owner, id, votes, created, forumid);
+    };
+
+    private static final RowMapper<Post> POST_MAPPER = (res, num) -> {
+        Long id = res.getLong("pid");
+//        Long forumid = res.getLong("forumid");
+        Long parent = res.getLong("parent");
+        Long threadid = res.getLong("threadid");
+        boolean isedited = res.getBoolean("isedited");
+        String author = res.getString("owner");
+        String message = res.getString("message");
+        String forum = res.getString("forum");
+        Timestamp created = res.getTimestamp("created");
+        return new Post(id,  parent, threadid, isedited, author, message, forum, created);
     };
 
 

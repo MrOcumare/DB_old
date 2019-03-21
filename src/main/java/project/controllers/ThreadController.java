@@ -93,4 +93,19 @@ public class ThreadController {
         return ResponseEntity.status(HttpStatus.OK).body(buf);
     }
 
+    @RequestMapping(path = "/{slug_or_id}/posts", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> getPosts(@PathVariable("slug_or_id") String slug_or_id,
+                                      @RequestParam(value = "limit", required = false) Integer limit,
+                                      @RequestParam(value = "sort", required = false, defaultValue = "flat") String sort,
+                                      @RequestParam(value = "desc", required = false, defaultValue = "false") Boolean desc,
+                                      @RequestParam(value = "since", required = false) Integer since) {
+
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(treadDAO.getPosts(treadDAO.getThreadIDbySlugOrID(slug_or_id), limit, since, sort, desc));
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+        }
+
+    }
+
 }
