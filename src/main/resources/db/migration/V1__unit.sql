@@ -40,7 +40,8 @@ CREATE table post
   isEdited BOOLEAN default false,
   message  TEXT NOT NULL,
   parent   INTEGER DEFAULT 0,
-  threadid INTEGER REFERENCES thread (tid)
+  threadid INTEGER REFERENCES thread (tid),
+  path     INT []
 );
 
 CREATE TABLE vote

@@ -16,6 +16,7 @@ public class Post {
     private String forum;
     private String created;
     private long thread;
+    private Object[] path;
 
 
     @JsonCreator
@@ -28,7 +29,8 @@ public class Post {
             @JsonProperty("author") String author,
             @JsonProperty("message") String message,
             @JsonProperty("forum") String forum,
-            @JsonProperty("created") Timestamp created
+            @JsonProperty("created") Timestamp created,
+            @JsonProperty("path") Object[] path
     )
     {
 //        this.forumid = forumid;
@@ -46,6 +48,7 @@ public class Post {
         this.isEdited = isedited;
         this.thread = thread;
         this.author = author;
+        this.path = path;
     }
 
     public long getId() {
@@ -118,6 +121,15 @@ public class Post {
 
     public void setThread(long thread) {
         this.thread = thread;
+    }
+
+    ////
+    public Object[] getPath() {
+        return path;
+    }
+
+    public void setPath(Object[] path) {
+        this.path = path;
     }
 
 

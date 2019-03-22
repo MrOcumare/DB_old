@@ -58,7 +58,7 @@ public class PostDAO {
                     return pst;
                 }, keyHolder);
                 body.setId(keyHolder.getKey().intValue());
-
+                setPostsPath(chuf, body);
                 String sql = "UPDATE forum "+
                     "set postCount = postCount + 1 "+
                     "WHERE slug = ?::citext";
@@ -101,6 +101,24 @@ public class PostDAO {
             return pst;
         }, keyHolder);
     }
+    public void setPostsPath(Post chuf, Post body) {
+        template.update(con -> {
+            PreparedStatement pst = con.prepareStatement(
+                    "update post set" +
+                            "  path = ? " +
+                            "where pid = ?");
+            if (body.getParent() == 0) {
+                pst.setArray(1, con.createArrayOf("INT", new Object[]{body.getId()}));//String.valueOf(body.getId()));
+            } else {
+                ArrayList arr = new ArrayList<Object>(Arrays.asList(chuf.getPath()));
+                arr.add(body.getId());
+                pst.setArray(1, con.createArrayOf("INT", arr.toArray()));//chuf.getPath() + "-" + String.valueOf(body.getId()));
+            }
+            pst.setLong(2, body.getId());
+            return pst;
+        });
+
+    }
 
 
 
@@ -125,6 +143,7 @@ public class PostDAO {
         String message = res.getString("message");
         String forum = res.getString("forum");
         Timestamp created = res.getTimestamp("created");
-        return new Post(id,  parent, threadid, isedited, author, message, forum, created);
+        Array path = res.getArray("path");
+        return new Post(id,  parent, threadid, isedited, author, message, forum, created, (Object[]) path.getArray());
     };
 }
