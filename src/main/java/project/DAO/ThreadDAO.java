@@ -216,88 +216,6 @@ public class ThreadDAO {
     }
 
 
-//    public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
-//        List<Object> myObj = new ArrayList<>();
-//        if (sort.equals("flat")) {
-//            StringBuilder myStr = new StringBuilder("select * from post where threadid = ?");
-//            myObj.add(threadId);
-//            if (since != null) {
-//                if (desc) {
-//                    myStr.append(" and pid < ?");
-//                } else {
-//                    myStr.append(" and pid > ?");
-//                }
-//                myObj.add(since);
-//            }
-//            myStr.append(" order by created ");
-//            if (desc) {
-//                myStr.append(" desc, pid desc ");
-//            } else {
-//                myStr.append(",pid");
-//            }
-//            if (limit != null) {
-//                myStr.append(" limit ? ");
-//                myObj.add(limit);
-//            }
-//            return template.query(myStr.toString()
-//                    , myObj.toArray(), POST_MAPPER);
-//        }else if (sort.equals("tree")) {
-//            StringBuilder myStr = new StringBuilder("select * from post where threadid = ?");
-//            myObj.add(threadId);
-//            if (since != null) {
-//                if (desc) {
-//                    myStr.append(" and path < (select path from post where pid = ?) ");
-//                } else {
-//                    myStr.append(" and path > (select path from post where pid = ?) ");
-//                }
-//                myObj.add(since);
-//            }
-//            myStr.append(" order by path ");
-//            if (desc) {
-//                myStr.append(" desc, pid desc ");
-//            }
-//            if (limit != null) {
-//                myStr.append(" limit ? ");
-//                myObj.add(limit);
-//            }
-//
-//            return template.query(myStr.toString()
-//                    , myObj.toArray(), POST_MAPPER);
-//        } else {
-//            StringBuilder myStr = new StringBuilder("select * from post join ");
-//            if (since != null) {
-//                if (desc) {
-//                    myStr.append(" (select pid from post where parent = 0 and threadid = ? and path < (select path from post where pid = ?)  order by path desc, threadid desc  limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
-//
-//                } else {
-//                    myStr.append(" (select pid from post where parent = 0 and threadid = ? and path > (select path from post where pid = ?)  order by path , threadid  limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
-//                }
-//                myObj.add(threadId);
-//                myObj.add(since);
-//                myObj.add(limit);
-//                myObj.add(threadId);
-//            } else if (limit != null) {
-//                if (desc) {
-//                    myStr.append(" (select pid  from post where parent = 0 and threadid = ? order by path desc, threadid desc limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
-//                } else {
-//                    myStr.append(" (select pid  from post where parent = 0 and threadid = ? order by path , threadid  limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
-//                }
-//                myObj.add(threadId);
-//                myObj.add(limit);
-//                myObj.add(threadId);
-//            }
-//            myStr.append(" order by path ");
-//            if (desc) {
-//                myStr.append(" desc ");
-//            }
-//            myStr.append(" ,threadid ");
-//            if (desc) {
-//                myStr.append(" desc ");
-//            }
-//            return template.query(myStr.toString()
-//                    , myObj.toArray(), POST_MAPPER);
-//        }
-//    }
 
     /////
     public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
@@ -349,36 +267,29 @@ public class ThreadDAO {
             return template.query(myStr.toString()
                     , myObj.toArray(), POST_MAPPER);
         } else {
-            StringBuilder myStr = new StringBuilder("select * from post join ");
+            StringBuilder myStr = new StringBuilder("select * from post p join ");
             if (since != null) {
                 if (desc) {
-                    myStr.append(" (select pid from post where parent = 0 and threadid = ? and path < (select path from post where pid = ?)  order by path desc, threadid desc  limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
+                    myStr.append(" (select pid from post where parent = 0 and threadid = ? and path[1] < (SELECT path[1] FROM post WHERE pid = ?) order by pid desc  limit ? ) as TT on  path[1] = TT.pid order by TT.pid desc, p.path asc, created desc ;");
 
                 } else {
-                    myStr.append(" (select pid from post where parent = 0 and threadid = ? and path > (select path from post where pid = ?)  order by path , threadid  limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
+                    myStr.append(" (select pid from post where parent = 0 and threadid = ? and path[1] > (SELECT path[1] FROM post WHERE pid = ?) order by pid asc limit ? ) as TT on  path[1] = TT.pid order by TT.pid asc, p.path asc, created desc ;");
                 }
                 myObj.add(threadId);
                 myObj.add(since);
                 myObj.add(limit);
-                myObj.add(threadId);
+
             } else if (limit != null) {
                 if (desc) {
-                    myStr.append(" (select pid  from post where parent = 0 and threadid = ? order by path desc , threadid desc limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
+                    myStr.append(" (select pid  from post where parent = 0 and threadid = ? order by pid desc limit ? ) as TT on  path[1] = TT.pid order by TT.pid desc, p.path asc, created desc ;");
                 } else {
-                    myStr.append(" (select pid  from post where parent = 0 and threadid = ? order by path , threadid  limit ? ) as TT on threadid = ? and path[1] = TT.pid ");
+                    myStr.append(" (select pid  from post where parent = 0 and threadid = ? order by pid asc limit ? ) as TT on  path[1] = TT.pid order by TT.pid asc, p.path asc, created desc ;");
                 }
                 myObj.add(threadId);
                 myObj.add(limit);
-                myObj.add(threadId);
+
             }
-            myStr.append(" order by path ");
-            if (desc) {
-                myStr.append(" desc ");
-            }
-            myStr.append(" ,threadid ");
-            if (desc) {
-                myStr.append(" desc ");
-            }
+
             return template.query(myStr.toString()
                     , myObj.toArray(), POST_MAPPER);
         }
