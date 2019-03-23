@@ -10,8 +10,8 @@ RUN apt-get -y update
 #
 
 # Установка postgresql
-ENV PGVER 9.3
-RUN apt-get install -y postgresql-$PGVER
+#ENV PGVER 9.3
+RUN apt-get install -y postgresql
 
 # Установка JDK
 RUN apt-get install -y openjdk-8-jdk-headless
