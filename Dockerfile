@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 MAINTAINER Murashko Ilya
 
@@ -10,7 +10,7 @@ RUN apt-get -y update
 #
 
 # Установка postgresql
-ENV PGVER 9.6
+ENV PGVER 10.3
 RUN apt-get install -y postgresql-$PGVER
 
 # Установка JDK
