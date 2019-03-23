@@ -10,7 +10,7 @@ RUN apt-get -y update
 #
 
 # Установка postgresql
-ENV PGVER 10.3
+ENV PGVER 9.6
 RUN apt-get install -y postgresql-$PGVER
 
 # Установка JDK
