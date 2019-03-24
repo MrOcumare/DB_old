@@ -1,86 +1,53 @@
-FROM ubuntu:18.04
-
-MAINTAINER Mrashko Ilya
-
-# Обвновление списка пакетов
-RUN apt-get -y update
-
-#
-# Установка зависимостей
-#
-
-# Установка postgresql
-ENV PGVER 9.3
-RUN apt-get install -y postgresql
-
-# Установка JDK
-RUN apt-get install -y openjdk-8-jdk-headless
-
-# Установка maven
-RUN apt-get install -y maven
-
-#
-# Настройка postgresql
-#
-
-# Run the rest of the commands as the ``postgres`` user created by the ``postgres-$PGVER`` package when it was ``apt-get installed``
+FROM ubuntu:16.04
+MAINTAINER VAN YURY
+RUN apt-get update -y
+ENV PGVER 9.5
+RUN apt-get install -y postgresql-$PGVER
 USER postgres
 
-# Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
-# then create a database `docker` owned by the ``docker`` role.
-RUN /etc/init.d/postgresql start && \
-    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" && \
-    /etc/init.d/postgresql stop
+RUN /etc/init.d/postgresql start &&        psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" && createdb -E UTF8 -T template0 -O docker forumdb && /etc/init.d/postgresql stop
 
-# Adjust PostgreSQL configuration so that remote connections to the
-# database are possible.
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+RUN echo "local all all trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+RUN echo "host  all all 127.0.0.1/32 trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
 
-# And add ``listen_addresses`` to ``/etc/postgresql/$PGVER/main/postgresql.conf``
+RUN echo "host  all all ::1/128 trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+RUN echo "host  all all 0.0.0.0/0 trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+
+RUN cat /etc/postgresql/$PGVER/main/pg_hba.conf
+
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
-# Expose the PostgreSQL port
+RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "work_mem = 8MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "maintenance_work_mem = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "wal_buffers = 1MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "effective_cache_size = 1024MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "cpu_tuple_cost = 0.0030" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "cpu_index_tuple_cost = 0.0010" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "cpu_operator_cost = 0.0005" >> /etc/postgresql/$PGVER/main/postgresql.conf
+
+RUN echo "log_statement = none" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "log_duration = off " >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "log_lock_waits = on" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "log_min_duration_statement = 50" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "log_filename = 'query.log'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "log_directory = '/var/log/postgresql'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "log_destination = 'csvlog'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "logging_collector = on" >> /etc/postgresql/$PGVER/main/postgresql.conf
 EXPOSE 5432
 
-# Add VOLUMEs to allow backup of config, logs and databases
-VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
-
-# Back to the root user
+VOLUME /etc/postgresql /var/log/postgresql /var/lib/postgresql
 USER root
+RUN apt-get install -y openjdk-8-jdk-headless
+RUN apt-get install -y maven
 
-
-#
-# Сборка проекта
-#
-
-# Копируем исходный код в Docker-контейнер
-ENV WORK /opt
-ADD . $WORK/java-spring/
-
-
-# Собираем и устанавливаем пакет
-WORKDIR $WORK/java-spring
+ENV WORK /opt/
+ADD / $WORK/
+WORKDIR $WORK
 RUN mvn package
 
-# Объявлем порт сервера
 EXPOSE 5000
 
-#
-# Запускаем PostgreSQL и сервер
-#
-USER postgres
-
-
-#USER root
-
-CMD service postgresql start && \
-    psql --command "UPDATE pg_database SET datistemplate = FALSE WHERE datname = 'template1';" && \
-    psql --command "DROP DATABASE template1;" && \
-    psql --command "CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UNICODE';" && \
-    psql --command "UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template1';" && \
-    psql --command "\c template1" && \
-    psql --command "VACUUM FREEZE;" && \
-    \
-    psql --command "CREATE DATABASE forum WITH ENCODING 'UTF8';" && \
-    psql -f $WORK/java-spring/tables.sql forum postgres && \
-    java -jar $WORK/java-spring/target/Db-1.0-SNAPSHOT.jar
+CMD service postgresql start && java -Xms200M -Xmx200M -Xss256K -jar target/DB-1.0-SNAPSHOT.jar
