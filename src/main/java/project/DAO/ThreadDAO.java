@@ -12,6 +12,8 @@ import java.util.List;
 //import project.models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.*;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import project.models.Post;
 import project.models.Thread;
 import project.models.User;

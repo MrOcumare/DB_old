@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER VAN YURY
+MAINTAINER Murashko Ilya
 RUN apt-get update -y
 ENV PGVER 9.5
 RUN apt-get install -y postgresql-$PGVER
