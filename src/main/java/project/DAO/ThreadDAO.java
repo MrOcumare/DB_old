@@ -181,7 +181,7 @@ public class ThreadDAO {
         template.update(con -> {
             PreparedStatement statement = con.prepareStatement(
                     "insert into vote(owner, voice, tid) values(?::citext,?, ?)" +
-                            " ON CONFLICT (owner) DO UPDATE SET " +
+                            " ON CONFLICT (owner, tid) DO UPDATE SET " +
                             " voice = ?;",
                     PreparedStatement.RETURN_GENERATED_KEYS);
             statement.setString(1, vt.getNickname());

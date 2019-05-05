@@ -47,7 +47,8 @@ CREATE table post
 CREATE TABLE vote
 (
   id    SERIAL PRIMARY KEY,
-  tid   INTEGER REFERENCES thread (tid),
-  owner CITEXT REFERENCES users (nickname) UNIQUE,
-  voice INTEGER DEFAULT 0
+  tid   INTEGER NOT NULL REFERENCES thread (tid),
+  owner CITEXT NOT NULL REFERENCES users (nickname),
+  voice INTEGER DEFAULT 0,
+  UNIQUE (owner, tid)
 );
